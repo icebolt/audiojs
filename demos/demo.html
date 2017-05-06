@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>audio.js</title>
+	<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+	<link href="http://v3.bootcss.com/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		body { color: #666; font-family: sans-serif; line-height: 1.4; }
+		h1 { color: #000; font-size: 1.2em; padding: 14px 3% 5px; margin: 0px; }
+		h1 em { font-style: normal; color: #999; }
+		a { color: #888; text-decoration: none; }
+		#wrapper { width:100%;margin:0 auto;max-width:414px;}
+		.banner-pic{width:100%;} .banner-pic img{width:100%;}
+		.text{padding: 0 3% 12px; margin: 0px;border-bottom: 10px solid #eee;}.text .time{color:#999;font-size: 0.9em;margin-bottom:15px;}
+		ol { padding: 0px; margin:10px 3% 60px 3%;list-style:none;color: #ccc;border-top: 1px solid #eee; font-size: 1.12em; }/* list-style: decimal-leading-zero inside; */
+		ol li { width:100%;position: relative; margin: 0px; padding: 14px 2px 15px; border-bottom: 1px solid #eee; cursor: pointer; box-sizing:border-box;-moz-box-sizing:border-box; /* Firefox */-webkit-box-sizing:border-box; /* Safari */}
+
+		ol li a { display:inline-block;  padding: 0px 0px 0px 25px; }/*text-indent: -3.3ex;*/
+		ol li:before,.glyphicon-lock:before{ content: ''; width: 24px; height: 24px; padding: 3px;margin: 0px; position: absolute;top:14px;text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2); }
+		ol li:before { left:0; background:url(../audiojs/pauseicong@3x.png) no-repeat center center; background-size:24px 24px;}
+		ol li:first-child:before{background:url(../audiojs/pauseicon@3x.png) no-repeat center center; background-size:24px 24px;}
+		ol li:first-child i{content: ''; width:30px; height: 16px; padding: 3px;margin-left:10px; position: absolute;top:18px;background:url(../audiojs/tryicon@3x.png) no-repeat center center; background-size:30px 16px;}
+
+		ol li.playing { color: #aaa; text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3); }
+		ol li.playing a , ol li:first-child a{ color: #000; }
+		ol li.playing:before{background:url(../audiojs/playicon@3x.png) no-repeat center center; background-size:24px 24px;}
+		
+	   .glyphicon {position: relative;top: 1px;display: inline-block;font-family: 'Glyphicons Halflings';font-style: normal;font-weight: 400;line-height: 1;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;float:right;top:2px}
+		#shortcuts { position: fixed; bottom: 0px; width: 100%; color: #666; font-size: 0.9em; margin: 60px 0px 0px; padding: 20px 20px 15px; background: #f3f3f3; background: rgba(240, 240, 240, 0.7); }
+		#shortcuts div { width: 100%; margin: 0px auto; }
+		#shortcuts h1 { margin: 0px 0px 6px; }
+		#shortcuts p { margin: 0px 0px 18px; }
+		#shortcuts em { font-style: normal; background: #d3d3d3; padding: 3px 9px; position: relative; left: -3px;
+			-webkit-border-radius: 4px; -moz-border-radius: 4px; -o-border-radius: 4px; border-radius: 4px;
+			-webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); -moz-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); -o-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
+		.credit {
+			text-align: center;
+		}
+		.live-status {
+			text-align: center;
+			position: fixed;
+			left: 0;
+			bottom: 0;
+			width:96%;
+			right: 0;
+			margin: auto;
+			cursor: pointer;
+			background: #fff;
+			padding: 10px 0;
+			max-width: 400px;
+		}
+
+		#play{
+			background: #000;
+			border-radius: 5px;
+			width: 100%;
+			height: 40px;
+			line-height: 40px;
+			color: #fff;
+			border: none;
+			outline: none;
+			font-size: 16px;
+		}
+		#play:disabled{
+			background: #ccc;
+		}
+		.glyphicon-lock:before{top:0;right:0;background:url(../audiojs/lockicon@3x.png) no-repeat center center; background-size:24px 24px;}
+		ol.buy li:first-child i{display:none;}
+		ol.buy li:before{background:url(../audiojs/pauseicon@3x.png) no-repeat center center; background-size:24px 24px;}
+		ol.buy a{color:#000;}
+		ol.buy li.playing:before{background:url(../audiojs/playicon@3x.png) no-repeat center center; background-size:24px 24px;}
+		ol.buy li span.glyphicon{display:none}
+		ol.buy li.playing:after{content: ''; width:20px; height: 19px; padding: 3px;right:0;position: absolute;top:16px;background:url(../audiojs/playm.gif) no-repeat center center; background-size:20px 19px;}
+		.s-Code {text-align: center; position: fixed; left: 0; bottom:50px; width:96%; right: 0; margin: auto; cursor: pointer; background: #fff; max-width: 414px; } 
+	</style>
+	<script src="http://live.bbwc.cn/public/course/js/jquery.js"></script>
+	<script src="../audiojs/audio.js"></script>
+	<script src="http://live.bbwc.cn/public/course/js/es6-promise.min.js"></script>
+	<script src="http://live.bbwc.cn/public/course/js/webridge.js"></script>
+	<script src="http://live.bbwc.cn/public/course/js/utils.js"></script>
+	<script src="http://live.bbwc.cn/public/course/js/fetch.js"></script>
+	<script src="demo.js"></script>
+</head>
+<body>
+<div id="wrapper">
+   
+	<div class="banner-pic"><img src="../audiojs/pic.jpg"></div>
+	<h1>人民币未来走势</h1>
+	<div class="text">
+		 <p class="time">2017-05-03</p>
+		 <p class="depict">人民币为什么会是2015年811汇改之后升值趋势转为贬值趋势？人民币具备持续贬值的寄出吗？人民币标志压兑主要货币走势？在人民币贬值背景下如何开展投资？</p>
+	</div>
+	<h1>专辑列表</h1>
+	<div  style="display:none"><audio preload></audio></div>
+	<ol>
+		<li><a href="#" data-src="../mp3/bensound-dubstep.mp3">中国离无现金社会还有多远</a><i></i></li>
+		<li class=""><a href="#" data-src="../mp3/bensound-cute.mp3">在硅谷保持掌控力的关键:赚钱</a><span class="glyphicon glyphicon-lock"></span></li>
+		<li class=""><a href="#" data-src="../mp3/bensound-buddy.mp3">中国离无现金社在硅谷保掌控力键...</a><span class="glyphicon glyphicon-lock"></span></li>
+		<li class=""><a href="#" data-src="../mp3/bensound-acousticbreeze.mp3">Acoustic Breeze</a><span class="glyphicon glyphicon-lock"></span></li>
+	</ol>
+	<!--ol class="buy">
+		<li class=""><a href="#" data-src="../mp3/bensound-epic.mp3">Epic</a><i></i></li>
+		<li class=""><a href="#" data-src="../mp3/bensound-funnysong.mp3">Funny Song</a><span class="glyphicon glyphicon-lock"></span></li>
+		<li class=""><a href="#" data-src="../mp3/bensound-littleidea.mp3">Little Idea</a><span class="glyphicon glyphicon-lock"></span></li>
+		<li class=""><a href="#" data-src="../mp3/bensound-betterdays.mp3">Better Days</a><span class="glyphicon glyphicon-lock"></span></li>
+	</ol-->
+	<div class="live-status">
+		<div id="play">
+			<span id="status">点击购买</span>：<span id="price">￥0.00</span>
+		</div>
+	</div>
+	<!--div class="s-Code"><img src="../audiojs/Code.png"></div-->
+</div>
+<!--div id="shortcuts">
+	<div>
+		<h1>Keyboard shortcuts:</h1>
+		<p><em>&rarr;</em> Next track</p>
+		<p><em>&larr;</em> Previous track</p>
+		<p><em>Space</em> Play/pause</p>
+	</div>
+</div-->
+</body>
+</html>
