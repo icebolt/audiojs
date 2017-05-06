@@ -68,7 +68,7 @@ $(function () {
 
         if (env.weiXin) {
             if (code === null && localStorage.getItem('newuser') != 1) {
-                var url = "http://live.bbwc.cn/public/course/index.html?eventid=" + eventid + "&scope=snsapi_base";
+                var url = "http://live.bbwc.cn/public/audiojs/demos/demo.html?eventid=" + eventid + "&scope=snsapi_base";
                 $.getJSON('http://live.bbwc.cn/pay/getUserInfo', {
                     eventid: eventid,
                     scope: "snsapi_base",
@@ -85,7 +85,7 @@ $(function () {
                     uid = res.uid;
                     if (!uid) {
                         localStorage.setItem('newuser', 1);
-                        var url = "http://live.bbwc.cn/public/course/index.html?eventid=" + eventid + "&scope=snsapi_userinfo";
+                        var url = "http://live.bbwc.cn/public/audiojs/demos/demo.html?eventid=" + eventid + "&scope=snsapi_userinfo";
                         $.getJSON('http://live.bbwc.cn/pay/getUserInfo', {
                             eventid: eventid,
                             scope: "snsapi_userinfo",
