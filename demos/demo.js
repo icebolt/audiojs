@@ -157,8 +157,10 @@ $(function () {
             if (price !== 0) {
                 if (res.permission == 1) { //已支付
 		    $(".live-status").hide();
+		    $(".no-buy").hide();
                 } else { //未支付
-                    if (now < startTime) { //直播未开始（现在时间 < 开始时间）
+		    $(".buy").hide();
+		    if (now < startTime) { //直播未开始（现在时间 < 开始时间）
                         if (price) $('#status').text('预约报名');
                         $('#price').text('￥' + fenToYuan(price))
                     } else if (now > endTime || (now > startTime && now < endTime)) { // 直播已结束（ 现在时间 > 结束时间 ）
@@ -212,6 +214,7 @@ $(function () {
                 }
             } else {
 		$(".live-status").hide();
+		$(".no-buy").hide();
             }
             $('.loading').hide();
             $('body').css({overflow: 'auto'});
