@@ -2,9 +2,8 @@ $(function () {
     $('body').css({overflow: 'hidden'});
 
     //获取直播信息
-    var uid, token, livebym3u8, livebyreview, liveName,articles;
+    var uid, token, livebym3u8, livebyreview, liveName;
     getLiveInfo().then(function (res) {
-	articles = res.article;
         liveName = res.eventname;
         var topImg = res.picture;
         var startTime = parseInt(res.starttime);
@@ -17,6 +16,12 @@ $(function () {
         livebym3u8 = res.livebym3u8;
         livebyreview = res.livebyreview;
         var promotion = res.promotion;
+
+        //修改头图
+        if (topImg) $('.top-img img').attr('src', topImg);
+
+        //修改开始时间
+        if (startTime) $('.startTime').text(format(startTime));
 
         //修改直播状态
         var now = Math.round(new Date().getTime() / 1000);
@@ -38,24 +43,32 @@ $(function () {
             $('.live-state').text('已结束')
         }
 
+        //修改嘉宾信息
+        if (host) {
+            $('.user-touxiang img').attr('src', host.avatar);
+            $('.user-info .user-name').text(host.realname);
+            $('.user-info .user-desc').text(host.jobtitle);
+        }
+
+        //修改直播标题、简介
+        if (liveName) document.title = liveName;
+        $('.live-desc-title').text(liveName);
+        if (liveDesc) $('.live-desc').html(liveDesc);
+
         $('#price').text('￥' + fenToYuan(price));
-        if (price) $('#status').text('点击购买');
+        if (now < startTime) { //直播未开始（现在时间 < 开始时间）
+            if (price) $('#status').text('预约报名');
+        } else if (now > endTime || (now > startTime && now < endTime)) { // 直播已结束（ 现在时间 > 结束时间 ）
+            if (price) $('#status').text('付费观看');
+        }
         if (promotion && promotion !== 0 && promotion < price) {
             $('#promotion').text('￥' + fenToYuan(promotion)).show();
             $('#price').addClass('youhui');
         }
 
-    	for(var i=0;i<articles.length;i++){
-		$(".buy").append('<li><a href="#" data-src="'+articles[i].weburl+'">'+articles[i].title+'</a><i></i></li>');
-		if(i==0) $(".no-buy").append('<li class="free"><a href="#" data-src="'+articles[i].weburl+'">'+articles[i].title+'</a><i></i></li>');
-		else $(".no-buy").append('<li class="lock"><a href="#">'+articles[i].title+'</a><span class="glyphicon glyphicon-lock"></span></li>');
-	}
-
-	audio();
-
         if (env.weiXin) {
             if (code === null && localStorage.getItem('newuser') != 1) {
-                var url = "http://live.bbwc.cn/event/show?eventid=" + eventid + "&scope=snsapi_base";
+                var url = "http://live.bbwc.cn/public/audiojs/demos/test5.html?eventid=" + eventid + "&scope=snsapi_base";
                 $.getJSON('http://live.bbwc.cn/pay/getUserInfo', {
                     eventid: eventid,
                     scope: "snsapi_base",
@@ -72,7 +85,7 @@ $(function () {
                     uid = res.uid;
                     if (!uid) {
                         localStorage.setItem('newuser', 1);
-                        var url = "http://live.bbwc.cn/event/show?eventid=" + eventid + "&scope=snsapi_userinfo";
+                        var url = "http://live.bbwc.cn/public/audiojs/demos/test5.html?eventid=" + eventid + "&scope=snsapi_userinfo";
                         $.getJSON('http://live.bbwc.cn/pay/getUserInfo', {
                             eventid: eventid,
                             scope: "snsapi_userinfo",
@@ -98,7 +111,7 @@ $(function () {
             }
         } else {
             if (env.phoneApp) {
-                $('#play,.lock').on('click', function () {
+                $('#play').on('click', function () {
                     // weridge获取uid
                     webridge.jsToNative('queryLoginStatus', '', function (res) {
                         if (!res.loginStatus) {
@@ -125,8 +138,8 @@ $(function () {
                 uid = getQueryString('uid');
                 if (!uid) uid = localStorage.getItem('szuid');
                 if (!uid) {
-                    // window.location.href = 'http://live.bbwc.cn/public/user/?redirect_uri=http://live.bbwc.cn/public/course/index.html?eventid=' + eventid;
-                    $('#play,.lock').on('click', function () {
+                    // window.location.href = 'http://live.bbwc.cn/public/user/?redirect_uri=http://live.bbwc.cn/public/audiojs/demos/test5.html?eventid=' + eventid;
+                    $('#play').on('click', function () {
                         window.location.href = 'http://live.bbwc.cn/public/course/users/login.html?redirect_uri=' + encodeURI(window.location.href);
                     }).removeAttr('disabled');
                     $('.loading').hide();
@@ -144,14 +157,16 @@ $(function () {
             if (price !== 0) {
                 if (res.permission == 1) { //已支付
 		    $(".live-status").hide();
-		    $(".no-buy").hide();
-		    $(".buy").show();
                 } else { //未支付
-		    $(".buy").hide();
-                    if (price) $('#status').text('点击购买');
-                    $('#price').text('￥' + fenToYuan(price))
+                    if (now < startTime) { //直播未开始（现在时间 < 开始时间）
+                        if (price) $('#status').text('预约报名');
+                        $('#price').text('￥' + fenToYuan(price))
+                    } else if (now > endTime || (now > startTime && now < endTime)) { // 直播已结束（ 现在时间 > 结束时间 ）
+                        if (price) $('#status').text('付费观看');
+                        $('#price').text('￥' + fenToYuan(price))
+                    }
                     if (uid) {
-                        $('#play,.lock').off('click').on('click', function () {
+                        $('#play').off('click').on('click', function () {
                             if (env.weiXin) {
                                 window.location.href = payPath + '?uid=' + uid + '&eventid=' + eventid;
                             } else if (env.phoneApp) {
@@ -190,69 +205,16 @@ $(function () {
                             }
                         })
                     }else{
-                        $('#play,.lock').off('click').on('click', function () {
+                        $('#play').off('click').on('click', function () {
                             console.log('未授权')
                         })
                     }
                 }
             } else {
 		$(".live-status").hide();
-		$(".no-buy").hide();
             }
             $('.loading').hide();
             $('body').css({overflow: 'auto'});
         }
     });
-
-    function audio(){
-    	// Setup the player to autoplay the next track
-    	var a = audiojs.createAll({
-        	trackEnded: function() {
-            		var next = $('.buy li.playing').next();
-            		if (!next.length) next = $('.buy li').first();
-            		next.addClass('playing').siblings().removeClass('playing');
-            		audio.load($('a', next).attr('data-src'));
-            		audio.play();
-        	}
-    	});
-
-    	// Load in the first track
-    	var audio = a[0];
-    	first = $('.buy a').attr('data-src');
-    	audio.load(first);
-
-    	$('.free').click(function(e) {
-        	e.preventDefault();
-        	$(this).addClass('playing').siblings().removeClass('playing');
-        	audio.load($('a', this).attr('data-src'));
-        	audio.play();
-    	});
-
-    	// Load in a track on click
-    	$('.buy li').click(function(e) {
-        	e.preventDefault();
-        	$(this).addClass('playing').siblings().removeClass('playing');
-        	audio.load($('a', this).attr('data-src'));
-        	audio.play();
-    	});
-    
-	// Keyboard shortcuts
-    	$(document).keydown(function(e) {
-        	var unicode = e.charCode ? e.charCode : e.keyCode;
-        	// right arrow
-        	if (unicode == 39) {
-            		var next = $('li.playing').next();
-            		if (!next.length) next = $('.buy li').first();
-            		next.click();
-            	// back arrow
-        	} else if (unicode == 37) {
-           		var prev = $('li.playing').prev();
-            		if (!prev.length) prev = $('.buy li').last();
-            		prev.click();
-            		// spacebar
-        	} else if (unicode == 32) {
-            		audio.playPause();
-        	}
-    	})
-     }
 });
