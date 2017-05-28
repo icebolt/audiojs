@@ -125,7 +125,6 @@ $(function () {
                 uid = getQueryString('uid');
                 if (!uid) uid = localStorage.getItem('szuid');
                 if (!uid) {
-                    // window.location.href = 'http://live.bbwc.cn/public/user/?redirect_uri=http://live.bbwc.cn/public/course/index.html?eventid=' + eventid;
                     $('#play,.lock').on('click', function () {
                         window.location.href = 'http://live.bbwc.cn/public/course/users/login.html?redirect_uri=' + encodeURI(window.location.href);
                     }).removeAttr('disabled');
@@ -223,17 +222,27 @@ $(function () {
 
     	$('.free').click(function(e) {
         	e.preventDefault();
-        	$(this).addClass('playing').siblings().removeClass('playing');
-        	audio.load($('a', this).attr('data-src'));
-        	audio.play();
+		if($(this).hasClass("playing")){
+                        $(this).removeClass('playing');
+			audio.pause();
+                }else{
+        		$(this).addClass('playing').siblings().removeClass('playing');
+        		audio.load($('a', this).attr('data-src'));
+			audio.play();
+		}
     	});
 
     	// Load in a track on click
     	$('.buy li').click(function(e) {
         	e.preventDefault();
-        	$(this).addClass('playing').siblings().removeClass('playing');
-        	audio.load($('a', this).attr('data-src'));
-        	audio.play();
+        	if($(this).hasClass("playing")){
+			$(this).removeClass('playing');
+			audio.pause();
+		}else{
+			$(this).addClass('playing').siblings().removeClass('playing');
+        		audio.load($('a', this).attr('data-src'));
+			audio.play();
+		}
     	});
     
 	// Keyboard shortcuts
